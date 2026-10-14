@@ -1,0 +1,229 @@
+{
+  "model_name": "Spamify Hybrid ML Classifier",
+  "algorithm": "TF-IDF (1-2 ngrams, sublinear) + Logistic Regression (L2)",
+  "accuracy": 99.47,
+  "precision": 98.55,
+  "recall": 99.27,
+  "f1_score": 98.91,
+  "roc_auc": 99.98,
+  "naive_bayes_accuracy": 99.12,
+  "dataset_stats": {
+    "total_samples": 5695,
+    "train_samples": 4556,
+    "test_samples": 1139,
+    "ham_samples": 4327,
+    "spam_samples": 1368,
+    "vocab_size": 15000
+  },
+  "confusion_matrix": {
+    "true_negative": 861,
+    "false_positive": 4,
+    "false_negative": 2,
+    "true_positive": 272
+  },
+  "top_spam_words": [
+    {
+      "token": "click",
+      "weight": 6.063
+    },
+    {
+      "token": "life",
+      "weight": 4.797
+    },
+    {
+      "token": "http",
+      "weight": 4.616
+    },
+    {
+      "token": "software",
+      "weight": 4.606
+    },
+    {
+      "token": "2005",
+      "weight": 4.365
+    },
+    {
+      "token": "money",
+      "weight": 4.34
+    },
+    {
+      "token": "account",
+      "weight": 4.213
+    },
+    {
+      "token": "viagra",
+      "weight": 4.147
+    },
+    {
+      "token": "online",
+      "weight": 4.008
+    },
+    {
+      "token": "sex",
+      "weight": 3.88
+    },
+    {
+      "token": "man",
+      "weight": 3.694
+    },
+    {
+      "token": "free",
+      "weight": 3.586
+    },
+    {
+      "token": "low",
+      "weight": 3.392
+    },
+    {
+      "token": "love",
+      "weight": 3.275
+    },
+    {
+      "token": "site",
+      "weight": 3.203
+    },
+    {
+      "token": "save",
+      "weight": 3.165
+    },
+    {
+      "token": "com",
+      "weight": 3.164
+    },
+    {
+      "token": "don",
+      "weight": 3.077
+    },
+    {
+      "token": "sexual",
+      "weight": 2.915
+    },
+    {
+      "token": "men",
+      "weight": 2.801
+    },
+    {
+      "token": "paid",
+      "weight": 2.794
+    },
+    {
+      "token": "net",
+      "weight": 2.766
+    },
+    {
+      "token": "prescription",
+      "weight": 2.759
+    },
+    {
+      "token": "mail",
+      "weight": 2.664
+    },
+    {
+      "token": "php",
+      "weight": 2.587
+    }
+  ],
+  "top_ham_words": [
+    {
+      "token": "vince",
+      "weight": 10.373
+    },
+    {
+      "token": "enron",
+      "weight": 9.094
+    },
+    {
+      "token": "thanks",
+      "weight": 5.623
+    },
+    {
+      "token": "2000",
+      "weight": 5.31
+    },
+    {
+      "token": "research",
+      "weight": 4.946
+    },
+    {
+      "token": "model",
+      "weight": 4.696
+    },
+    {
+      "token": "attached",
+      "weight": 4.429
+    },
+    {
+      "token": "kaminski",
+      "weight": 4.234
+    },
+    {
+      "token": "energy",
+      "weight": 4.135
+    },
+    {
+      "token": "713",
+      "weight": 3.507
+    },
+    {
+      "token": "2001",
+      "weight": 3.464
+    },
+    {
+      "token": "password",
+      "weight": 3.453
+    },
+    {
+      "token": "let know",
+      "weight": 3.396
+    },
+    {
+      "token": "questions",
+      "weight": 3.394
+    },
+    {
+      "token": "enron com",
+      "weight": 3.364
+    },
+    {
+      "token": "houston",
+      "weight": 3.339
+    },
+    {
+      "token": "meeting",
+      "weight": 3.338
+    },
+    {
+      "token": "conference",
+      "weight": 3.173
+    },
+    {
+      "token": "ect",
+      "weight": 3.01
+    },
+    {
+      "token": "pdf",
+      "weight": 2.995
+    },
+    {
+      "token": "stinson",
+      "weight": 2.909
+    },
+    {
+      "token": "doc",
+      "weight": 2.785
+    },
+    {
+      "token": "shirley",
+      "weight": 2.744
+    },
+    {
+      "token": "risk",
+      "weight": 2.66
+    },
+    {
+      "token": "vince kaminski",
+      "weight": 2.651
+    }
+  ],
+  "training_duration_seconds": 3.3
+}

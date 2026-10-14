@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spamify AI - Intelligent SMS & Email Spam Detection</title>
+  <meta name="description" content="State-of-the-art Spam & Phishing Detection for Email and SMS with 99.47% accuracy, explainable AI keywords, and heuristics.">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Chart.js -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Glassmorphism & Custom Scrollbar */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .light .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+    .glow-indigo {
+      box-shadow: 0 0 40px -10px rgba(99, 102, 241, 0.25);
+    }
+    .glow-rose {
+      box-shadow: 0 0 40px -10px rgba(244, 63, 94, 0.3);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.3);
+    }
+    
+    /* Radial gauge transitions */
+    .gauge-circle {
+      transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.4s ease;
+    }
+    
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.3);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(148, 163, 184, 0.5);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans transition-colors duration-300 selection:bg-indigo-500 selection:text-white">
+  
+  <!-- Background Glow Orbs -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute top-1/3 -right-40 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl"></div>
+    <div class="absolute -bottom-40 left-1/3 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
+  </div>
+
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-200 bg-clip-text text-transparent">Spamify AI</span>
+            <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">v2.4 ML</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">SMS & Email Threat Intelligence</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-sm">
+        <button onclick="switchTab('classifier')" id="nav-classifier" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-white bg-indigo-600 shadow-sm transition-all flex items-center space-x-1.5">
+          <i data-lucide="scan" class="w-4 h-4"></i>
+          <span>Analyzer</span>
+        </button>
+        <button onclick="switchTab('batch')" id="nav-batch" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all flex items-center space-x-1.5">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+          <span>Batch Scanner</span>
+        </button>
+        <button onclick="switchTab('metrics')" id="nav-metrics" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all flex items-center space-x-1.5">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          <span>Model Analytics</span>
+        </button>
+        <button onclick="switchTab('api')" id="nav-api" class="tab-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all flex items-center space-x-1.5">
+          <i data-lucide="terminal" class="w-4 h-4"></i>
+          <span>API</span>
+        </button>
+      </nav>
+
+      <!-- Right Controls: Status & Theme Toggle -->
+      <div class="flex items-center space-x-3">
+        <div class="hidden lg:flex items-center space-x-2 text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span>99.47% Accuracy</span>
+        </div>
+        
+        <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors border border-transparent hover:border-slate-700" title="Toggle Light/Dark Theme">
+          <i data-lucide="sun" id="theme-icon-sun" class="w-5 h-5 hidden"></i>
+          <i data-lucide="moon" id="theme-icon-moon" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Hero / Metrics Bar -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="glass-card rounded-2xl p-4 flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+          <i data-lucide="target" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Test Accuracy</div>
+          <div class="text-2xl font-bold text-white tracking-tight">99.47%</div>
+          <div class="text-[11px] text-emerald-400">0.9998 ROC-AUC</div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+          <i data-lucide="database" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Trained Corpus</div>
+          <div class="text-2xl font-bold text-white tracking-tight">5,695</div>
+          <div class="text-[11px] text-slate-400">15,000 N-Gram Vocab</div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+          <i data-lucide="zap" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Inference Speed</div>
+          <div class="text-2xl font-bold text-white tracking-tight">&lt; 15 ms</div>
+          <div class="text-[11px] text-cyan-400">Real-time Hybrid Eval</div>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+          <i data-lucide="shield-alert" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wider">Dual Channel</div>
+          <div class="text-2xl font-bold text-white tracking-tight">SMS + Email</div>
+          <div class="text-[11px] text-slate-400">Heuristics + ML</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: LIVE CLASSIFIER / ANALYZER -->
+    <section id="tab-classifier" class="tab-content">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Input Control & Presets (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="glass-card rounded-2xl p-6 glow-indigo transition-all">
+            
+            <!-- Channel Switcher (Email vs SMS) -->
+            <div class="flex items-center justify-between mb-5 pb-4 border-b border-slate-800">
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-semibold text-slate-300">Target Channel:</span>
+                <div class="bg-slate-900/80 p-1 rounded-xl border border-slate-800 flex text-xs">
+                  <button id="mode-email" onclick="setMode('email')" class="mode-btn px-3 py-1.5 rounded-lg font-medium bg-indigo-600 text-white transition-all flex items-center space-x-1">
+                    <i data-lucide="mail" class="w-3.5 h-3.5"></i>
+                    <span>Email Message</span>
+                  </button>
+                  <button id="mode-sms" onclick="setMode('sms')" class="mode-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white transition-all flex items-center space-x-1">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>SMS / Text</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quick Clear Button -->
+              <button onclick="clearInputs()" class="text-xs text-slate-400 hover:text-rose-400 flex items-center space-x-1 transition-colors">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                <span>Clear</span>
+              </button>
+            </div>
+
+            <!-- 1-Click Curated Test Presets -->
+            <div class="mb-5">
+              <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
+                Quick Test Samples (Click to load):
+              </label>
+              <div class="flex flex-wrap gap-2" id="preset-pills-container">
+                <button onclick="loadSample('ex_email_ham_1')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1 transition-all">
+                  <span>🛡️ Meeting Notes (Safe Email)</span>
+                </button>
+                <button onclick="loadSample('ex_email_spam_1')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-rose-300 border border-rose-500/30 flex items-center space-x-1 transition-all">
+                  <span>🚨 Bank Alert (Phishing Email)</span>
+                </button>
+                <button onclick="loadSample('ex_sms_scam_1')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-amber-300 border border-amber-500/30 flex items-center space-x-1 transition-all">
+                  <span>📦 USPS Delivery (SMS Scam)</span>
+                </button>
+                <button onclick="loadSample('ex_sms_scam_2')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-rose-300 border border-rose-500/30 flex items-center space-x-1 transition-all">
+                  <span>🎁 Crypto Prize (Scam SMS)</span>
+                </button>
+                <button onclick="loadSample('ex_sms_ham_1')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-emerald-300 border border-emerald-500/30 flex items-center space-x-1 transition-all">
+                  <span>💬 Friend Dinner (Safe SMS)</span>
+                </button>
+                <button onclick="loadSample('ex_sms_ham_2')" class="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800/80 hover:bg-slate-700/80 text-sky-300 border border-sky-500/30 flex items-center space-x-1 transition-all">
+                  <span>🔑 Bank 2FA OTP (Safe SMS)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subject Line (Email mode only) -->
+            <div id="subject-container" class="mb-4">
+              <label for="input-subject" class="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+                <span>Email Subject Line (Optional):</span>
+                <span class="text-[11px] text-slate-500 font-mono" id="subject-len">0 chars</span>
+              </label>
+              <div class="relative">
+                <input type="text" id="input-subject" placeholder="e.g., Urgent: Account Security Notification"
+                  class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-sans">
+              </div>
+            </div>
+
+            <!-- Message Body Input -->
+            <div class="mb-4">
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="input-text" class="text-xs font-semibold text-slate-300" id="body-label">
+                  Message Content:
+                </label>
+                <div class="flex items-center space-x-3 text-[11px] text-slate-400 font-mono">
+                  <span id="char-count">0 characters</span>
+                  <span>•</span>
+                  <span id="word-count">0 words</span>
+                  <span id="sms-segment-count" class="hidden text-amber-400 font-bold">• 1/160 SMS</span>
+                </div>
+              </div>
+              <textarea id="input-text" rows="8" placeholder="Paste or type email body or SMS message here..."
+                class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-indigo-500 rounded-xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all font-mono leading-relaxed resize-y"></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+              <div class="text-xs text-slate-400 flex items-center space-x-1.5">
+                <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px] text-slate-300">Ctrl</kbd>
+                <span>+</span>
+                <kbd class="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-[11px] text-slate-300">Enter</kbd>
+                <span>to instantly evaluate</span>
+              </div>
+
+              <button onclick="analyzeMessage()" id="btn-analyze" class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 flex items-center justify-center space-x-2 transition-all transform active:scale-95">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                <span id="btn-analyze-text">Analyze Threat Level</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Results Panel & X-Ray (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+          
+          <!-- Idle Placeholder -->
+          <div id="results-idle" class="glass-card rounded-2xl p-10 flex flex-col items-center justify-center text-center h-full min-h-[460px]">
+            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4 animate-bounce">
+              <i data-lucide="shield-search" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-white mb-2">Ready for Inspection</h3>
+            <p class="text-sm text-slate-400 max-w-xs mb-6">
+              Enter email or SMS text, or click any of the preset samples above to see deep threat analysis, confidence scores, and trigger keywords.
+            </p>
+            <button onclick="loadSample('ex_email_spam_1'); analyzeMessage();" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium underline flex items-center space-x-1">
+              <span>Run test on Phishing Email example</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <!-- Active Results Card -->
+          <div id="results-active" class="hidden glass-card rounded-2xl p-6 transition-all duration-500">
+            
+            <!-- Header Status Pill & Latency -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+              <div class="flex items-center space-x-2">
+                <span id="result-status-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-current"></span>
+                  <span id="result-classification">SPAM DETECTED</span>
+                </span>
+              </div>
+              <div class="text-xs font-mono text-slate-400 flex items-center space-x-1">
+                <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                <span id="result-latency">8.2 ms</span>
+              </div>
+            </div>
+
+            <!-- Gauge Meter & Risk Score -->
+            <div class="py-6 flex flex-col items-center justify-center">
+              <div class="relative w-44 h-44 flex items-center justify-center">
+                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                  <!-- Background Track -->
+                  <circle cx="60" cy="60" r="50" fill="transparent" stroke="currentColor" stroke-width="10" class="text-slate-800" />
+                  <!-- Progress Bar -->
+                  <circle id="gauge-circle" cx="60" cy="60" r="50" fill="transparent" stroke="currentColor" stroke-width="10" stroke-dasharray="314.159" stroke-dashoffset="314.159" stroke-linecap="round" class="gauge-circle text-rose-500" />
+                </svg>
+                <!-- Center Score Text -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span id="result-score" class="text-4xl font-extrabold text-white tracking-tight">85%</span>
+                  <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-0.5">Spam Risk</span>
+                </div>
+              </div>
+
+              <!-- Sub-risk Label -->
+              <div id="result-risk-tier" class="text-sm font-semibold text-rose-400 mt-2">
+                High Risk Phishing Threat
+              </div>
+            </div>
+
+            <!-- Ham vs Spam Confidence Bars -->
+            <div class="space-y-2 mb-6 bg-slate-900/60 p-3.5 rounded-xl border border-slate-800">
+              <div class="flex justify-between text-xs font-medium">
+                <span class="text-emerald-400 flex items-center space-x-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                  <span>Ham (Legitimate)</span>
+                </span>
+                <span id="prob-ham-text" class="text-emerald-400 font-mono">15.0%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden flex">
+                <div id="prob-ham-bar" class="h-full bg-emerald-500 transition-all duration-700" style="width: 15%"></div>
+                <div id="prob-spam-bar" class="h-full bg-rose-500 transition-all duration-700" style="width: 85%"></div>
+              </div>
+              <div class="flex justify-between text-xs font-medium">
+                <span class="text-rose-400 flex items-center space-x-1">
+                  <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                  <span>Spam / Threat</span>
+                </span>
+                <span id="prob-spam-text" class="text-rose-400 font-mono">85.0%</span>
+              </div>
+            </div>
+
+            <!-- Heuristic Alerts / Signals -->
+            <div class="mb-5" id="heuristics-container">
+              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+                <span>Security Signals & Heuristics</span>
+                <span id="heuristic-count-badge" class="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300">0 flagged</span>
+              </div>
+              <div id="heuristics-list" class="space-y-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Top Trigger Keywords -->
+            <div class="mb-5">
+              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                Key Trigger Terms Detected:
+              </div>
+              <div id="trigger-words-list" class="flex flex-wrap gap-1.5">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+            <!-- Action Recommendation Box -->
+            <div class="p-3.5 rounded-xl border bg-slate-900/80 mb-5" id="recommendation-box">
+              <div class="flex items-start space-x-2.5">
+                <i data-lucide="info" class="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <div class="text-xs font-semibold text-slate-200 mb-0.5">Advisory Guidance</div>
+                  <p id="result-recommendation" class="text-xs text-slate-400 leading-relaxed">
+                    Recommendation content goes here.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- X-Ray Text Highlight Modal/Toggle -->
+            <div class="pt-2 border-t border-slate-800">
+              <button onclick="toggleXRay()" class="w-full py-2 px-3 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-xs font-medium text-slate-300 flex items-center justify-center space-x-2 transition-colors">
+                <i data-lucide="eye" class="w-4 h-4 text-indigo-400"></i>
+                <span id="xray-toggle-text">Show X-Ray Keyword Highlighting</span>
+              </button>
+              
+              <div id="xray-content-box" class="hidden mt-3 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-mono whitespace-pre-wrap max-h-56 overflow-y-auto">
+                <!-- Highlighted HTML injected here -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: BATCH SCANNER -->
+    <section id="tab-batch" class="tab-content hidden space-y-6">
+      
+      <!-- Top Upload & Paste Zone -->
+      <div class="glass-card rounded-2xl p-6 glow-indigo">
+        <h2 class="text-lg font-bold text-white mb-1 flex items-center space-x-2">
+          <i data-lucide="layers" class="w-5 h-5 text-indigo-400"></i>
+          <span>Bulk File & Text Scanner</span>
+        </h2>
+        <p class="text-xs text-slate-400 mb-6">
+          Upload a <code class="text-indigo-300">.csv</code> or <code class="text-indigo-300">.txt</code> dataset, or paste multiple messages (one per line) to evaluate up to 500 records at once.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- File Drop Zone -->
+          <div class="border-2 border-dashed border-slate-700 hover:border-indigo-500 rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors bg-slate-900/40" onclick="document.getElementById('batch-file-input').click()">
+            <input type="file" id="batch-file-input" accept=".csv,.txt" class="hidden" onchange="handleFileSelect(event)">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-3">
+              <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+            </div>
+            <p class="text-sm font-semibold text-slate-200 mb-1" id="drop-filename">Upload CSV or TXT File</p>
+            <p class="text-xs text-slate-400 max-w-xs">Drag & drop your dataset here or click to browse</p>
+          </div>
+
+          <!-- Multi-line Text Paste -->
+          <div class="flex flex-col">
+            <label class="text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
+              <span>Or Paste Messages (1 per line):</span>
+              <button onclick="loadBatchSample()" class="text-[11px] text-indigo-400 hover:underline">Load 5 Test Messages</button>
+            </label>
+            <textarea id="batch-text-input" rows="5" placeholder="Meeting at 4pm today...&#10;Claim your free $1000 prize now!&#10;Your password will expire, click here..."
+              class="w-full bg-slate-900/90 border border-slate-700/80 focus:border-indigo-500 rounded-xl p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 font-mono resize-none flex-1"></textarea>
+          </div>
+
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button onclick="runBatchAnalysis()" id="btn-batch-run" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-md shadow-indigo-600/30 flex items-center space-x-2 transition-all">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            <span id="batch-run-text">Run Batch Inspection</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Batch Summary KPIs -->
+      <div id="batch-kpis" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="glass-card rounded-xl p-4">
+          <div class="text-xs text-slate-400 uppercase tracking-wider">Total Evaluated</div>
+          <div id="kpi-total" class="text-2xl font-bold text-white mt-1">0</div>
+          <div id="kpi-speed" class="text-[11px] text-slate-400 mt-0.5">0 ms total</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border-rose-500/30">
+          <div class="text-xs text-rose-400 uppercase tracking-wider">Spam Detected</div>
+          <div id="kpi-spam" class="text-2xl font-bold text-rose-400 mt-1">0</div>
+          <div id="kpi-spam-rate" class="text-[11px] text-rose-300/80 mt-0.5">0% rate</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border-emerald-500/30">
+          <div class="text-xs text-emerald-400 uppercase tracking-wider">Clean Ham</div>
+          <div id="kpi-ham" class="text-2xl font-bold text-emerald-400 mt-1">0</div>
+          <div id="kpi-ham-rate" class="text-[11px] text-emerald-300/80 mt-0.5">0% safe</div>
+        </div>
+        <div class="glass-card rounded-xl p-4 border-amber-500/30">
+          <div class="text-xs text-amber-400 uppercase tracking-wider">Avg Risk Score</div>
+          <div id="kpi-avg-risk" class="text-2xl font-bold text-amber-400 mt-1">0%</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Threat intensity</div>
+        </div>
+      </div>
+
+      <!-- Batch Results Table -->
+      <div id="batch-table-container" class="hidden glass-card rounded-2xl overflow-hidden">
+        <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div class="flex items-center space-x-3 w-full sm:w-auto">
+            <span class="text-sm font-bold text-white">Batch Inspection Records</span>
+            <!-- Filter Pills -->
+            <div class="bg-slate-900 p-0.5 rounded-lg border border-slate-800 text-xs flex">
+              <button onclick="filterBatch('ALL')" id="filter-all" class="px-2.5 py-1 rounded bg-indigo-600 text-white font-medium">All</button>
+              <button onclick="filterBatch('SPAM')" id="filter-spam" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium">Spam Only</button>
+              <button onclick="filterBatch('HAM')" id="filter-ham" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium">Ham Only</button>
+            </div>
+          </div>
+
+          <!-- Export CSV Button -->
+          <button onclick="exportBatchCSV()" class="w-full sm:w-auto px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 flex items-center justify-center space-x-1.5 transition-colors">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Export to CSV</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto max-h-[500px]">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-900/80 text-slate-400 uppercase tracking-wider sticky top-0 z-10 border-b border-slate-800">
+              <tr>
+                <th class="p-3 font-semibold">#</th>
+                <th class="p-3 font-semibold">Message Preview</th>
+                <th class="p-3 font-semibold">Classification</th>
+                <th class="p-3 font-semibold">Spam Risk</th>
+                <th class="p-3 font-semibold">Key Trigger</th>
+              </tr>
+            </thead>
+            <tbody id="batch-table-body" class="divide-y divide-slate-800/60 font-sans">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- TAB 3: MODEL ANALYTICS & INSIGHTS -->
+    <section id="tab-metrics" class="tab-content hidden space-y-6">
+      
+      <!-- Performance Badges Grid -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="glass-card rounded-2xl p-4 text-center">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Accuracy</div>
+          <div class="text-3xl font-extrabold text-white mt-1">99.47%</div>
+          <div class="text-[11px] text-emerald-400 mt-0.5">Top-tier ML precision</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Precision</div>
+          <div class="text-3xl font-extrabold text-indigo-400 mt-1">98.55%</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Minimizes false alarms</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Recall</div>
+          <div class="text-3xl font-extrabold text-violet-400 mt-1">99.27%</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Catches 99.3% threats</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">F1 Score</div>
+          <div class="text-3xl font-extrabold text-sky-400 mt-1">98.91%</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Balanced metric</div>
+        </div>
+        <div class="glass-card rounded-2xl p-4 text-center col-span-2 md:col-span-1">
+          <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">ROC-AUC</div>
+          <div class="text-3xl font-extrabold text-emerald-400 mt-1">99.98%</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Near-perfect separation</div>
+        </div>
+      </div>
+
+      <!-- Charts & Confusion Matrix Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Top Feature Weights Chart (8 cols) -->
+        <div class="lg:col-span-8 glass-card rounded-2xl p-6">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-base font-bold text-white">Feature Importance Weights</h3>
+              <p class="text-xs text-slate-400">Top positive spam indicators vs top legitimate ham tokens</p>
+            </div>
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="inline-flex items-center text-rose-400"><span class="w-3 h-3 rounded bg-rose-500 mr-1"></span> Spam</span>
+              <span class="inline-flex items-center text-emerald-400"><span class="w-3 h-3 rounded bg-emerald-500 mr-1"></span> Ham</span>
+            </div>
+          </div>
+          <div class="h-80">
+            <canvas id="featuresChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Confusion Matrix & Architecture (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <!-- Confusion Matrix -->
+          <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-base font-bold text-white mb-1">Test Confusion Matrix</h3>
+            <p class="text-xs text-slate-400 mb-4">Evaluated on 1,139 unseen test samples</p>
+
+            <div class="grid grid-cols-2 gap-2 text-center text-xs">
+              <div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30">
+                <div class="text-[10px] uppercase font-bold text-emerald-400">True Negatives</div>
+                <div class="text-xl font-extrabold text-white mt-1">861</div>
+                <div class="text-[10px] text-slate-400">Legit Ham as Ham</div>
+              </div>
+              <div class="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30">
+                <div class="text-[10px] uppercase font-bold text-rose-400">False Positives</div>
+                <div class="text-xl font-extrabold text-white mt-1">4</div>
+                <div class="text-[10px] text-slate-400">Ham as Spam (0.4%)</div>
+              </div>
+              <div class="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30">
+                <div class="text-[10px] uppercase font-bold text-rose-400">False Negatives</div>
+                <div class="text-xl font-extrabold text-white mt-1">2</div>
+                <div class="text-[10px] text-slate-400">Spam as Ham (0.7%)</div>
+              </div>
+              <div class="p-3 rounded-xl bg-indigo-500/15 border border-indigo-500/30">
+                <div class="text-[10px] uppercase font-bold text-indigo-400">True Positives</div>
+                <div class="text-xl font-extrabold text-white mt-1">272</div>
+                <div class="text-[10px] text-slate-400">Spam caught (99.3%)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Architecture Specs -->
+          <div class="glass-card rounded-2xl p-6">
+            <h3 class="text-base font-bold text-white mb-3">Model Architecture</h3>
+            <ul class="space-y-2 text-xs text-slate-300">
+              <li class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Vectorizer:</span>
+                <span class="font-mono text-indigo-300">TF-IDF (1-2 N-Grams)</span>
+              </li>
+              <li class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Sublinear TF:</span>
+                <span class="font-mono text-emerald-400">Enabled (1 + log(tf))</span>
+              </li>
+              <li class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Classifier:</span>
+                <span class="font-mono text-indigo-300">LogisticRegression (L2)</span>
+              </li>
+              <li class="flex items-center justify-between pb-1.5 border-b border-slate-800">
+                <span class="text-slate-400">Class Weighting:</span>
+                <span class="font-mono text-indigo-300">Balanced</span>
+              </li>
+              <li class="flex items-center justify-between">
+                <span class="text-slate-400">Heuristic Engine:</span>
+                <span class="font-mono text-cyan-300">Smishing & Phishing Rules</span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TAB 4: API & INTEGRATION -->
+    <section id="tab-api" class="tab-content hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 glow-indigo">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold text-white">Spamify REST API Documentation</h2>
+            <p class="text-xs text-slate-400">Integrate real-time spam scoring directly into your apps, email clients, or SMS gateways.</p>
+          </div>
+          <div class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+            POST /api/predict
+          </div>
+        </div>
+
+        <!-- Code Snippet Switcher -->
+        <div class="mb-4">
+          <div class="flex space-x-2 border-b border-slate-800 pb-2">
+            <button onclick="setApiSnippet('python')" id="btn-api-python" class="px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 text-white">Python</button>
+            <button onclick="setApiSnippet('javascript')" id="btn-api-javascript" class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white">JavaScript (Fetch)</button>
+            <button onclick="setApiSnippet('curl')" id="btn-api-curl" class="px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white">cURL</button>
+          </div>
+        </div>
+
+        <!-- Preformatted Code Block -->
+        <div class="relative bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs overflow-x-auto text-slate-300">
+          <button onclick="copyApiSnippet()" class="absolute top-3 right-3 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 flex items-center space-x-1">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            <span id="copy-snippet-text">Copy</span>
+          </button>
+          <pre id="api-code-block" class="leading-relaxed"><code># Python Example
+import requests
+
+url = "http://127.0.0.1:5000/api/predict"
+payload = {
+    "text": "Your account has been suspended! Verify here: http://bit.ly/bank-auth",
+    "subject": "Urgent Security Alert",
+    "mode": "email"
+}
+
+response = requests.post(url, json=payload)
+data = response.json()
+print("Classification:", data["classification"])
+print("Spam Risk Score:", data["spam_score"], "%")
+print("Trigger Words:", [t["word"] for t in data["trigger_words"]])</code></pre>
+        </div>
+
+        <!-- JSON Response Preview -->
+        <div class="mt-6">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Example JSON Response:</h3>
+          <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs text-indigo-300 leading-relaxed overflow-x-auto">
+<pre>{
+  "classification": "SPAM",
+  "risk_level": "HIGH_RISK",
+  "risk_label": "High Risk Spam / Phishing",
+  "spam_score": 85.2,
+  "ham_score": 14.8,
+  "ml_confidence": {
+    "spam_probability": 84.1,
+    "ham_probability": 15.9
+  },
+  "heuristics": [
+    {
+      "type": "warning",
+      "title": "URL Shortener Detected",
+      "description": "Message masks the final destination using a shortened URL."
+    }
+  ],
+  "trigger_words": [
+    { "word": "account", "weight": 4.21, "impact": "Spam Indicator" },
+    { "word": "click", "weight": 6.06, "impact": "Spam Indicator" }
+  ],
+  "recommendation": "Do not click on links or share personal credentials.",
+  "latency_ms": 7.5
+}</pre>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 mt-16 py-8 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <span class="font-semibold text-slate-400">Spamify AI</span>
+        <span>•</span>
+        <span>Spam Filtering for SMS and Email</span>
+      </div>
+      <div>
+        <span>Model: TF-IDF + Logistic Regression (99.47% Accuracy)</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center space-x-2 bg-slate-900 border border-slate-700 text-white text-xs px-4 py-3 rounded-xl shadow-2xl">
+    <i data-lucide="check-circle" id="toast-icon" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-message">Notification message</span>
+  </div>
+
+  <!-- Client-side Application Logic -->
+  <script>
+    // State management
+    let currentMode = 'email';
+    let currentBatchItems = [];
+    let sampleData = {};
+    let metadataCache = null;
+    let featuresChartInstance = null;
+
+    // Initialize Lucide icons
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      fetchExamples();
+      fetchModelMetadata();
+      setupCharCounters();
+      initKeyboardShortcuts();
+    });
+
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isDark = html.classList.toggle('dark');
+      document.body.classList.toggle('light', !isDark);
+      
+      const sunIcon = document.getElementById('theme-icon-sun');
+      const moonIcon = document.getElementById('theme-icon-moon');
+      
+      if (isDark) {
+        sunIcon.classList.add('hidden');
+        moonIcon.classList.remove('hidden');
+        localStorage.setItem('spamify-theme', 'dark');
+      } else {
+        sunIcon.classList.remove('hidden');
+        moonIcon.classList.add('hidden');
+        localStorage.setItem('spamify-theme', 'light');
+      }
+      lucide.createIcons();
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+      document.getElementById(`nav-${tabId}`).classList.add('bg-indigo-600', 'text-white');
+      document.getElementById(`nav-${tabId}`).classList.remove('text-slate-400');
+
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+      if (tabId === 'metrics' && !featuresChartInstance) {
+        renderFeaturesChart();
+      }
+      lucide.createIcons();
+    }
+
+    // Set Analysis Mode (Email vs SMS)
+    function setMode(mode) {
+      currentMode = mode;
+      const btnEmail = document.getElementById('mode-email');
+      const btnSms = document.getElementById('mode-sms');
+      const subjectBox = document.getElementById('subject-container');
+      const bodyLabel = document.getElementById('body-label');
+      const smsSegments = document.getElementById('sms-segment-count');
+
+      if (mode === 'email') {
+        btnEmail.classList.add('bg-indigo-600', 'text-white');
+        btnEmail.classList.remove('text-slate-400');
+        btnSms.classList.remove('bg-indigo-600', 'text-white');
+        btnSms.classList.add('text-slate-400');
+
+        subjectBox.classList.remove('hidden');
+        bodyLabel.textContent = 'Email Body Content:';
+        smsSegments.classList.add('hidden');
+      } else {
+        btnSms.classList.add('bg-indigo-600', 'text-white');
+        btnSms.classList.remove('text-slate-400');
+        btnEmail.classList.remove('bg-indigo-600', 'text-white');
+        btnEmail.classList.add('text-slate-400');
+
+        subjectBox.classList.add('hidden');
+        bodyLabel.textContent = 'SMS / Direct Message Content:';
+        smsSegments.classList.remove('hidden');
+      }
+      updateCounts();
+    }
+
+    // Realtime character & word counter
+    function setupCharCounters() {
+      const textarea = document.getElementById('input-text');
+      const subjectInput = document.getElementById('input-subject');
+
+      textarea.addEventListener('input', updateCounts);
+      subjectInput.addEventListener('input', () => {
+        document.getElementById('subject-len').textContent = `${subjectInput.value.length} chars`;
+      });
+    }
+
+    function updateCounts() {
+      const text = document.getElementById('input-text').value;
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+
+      document.getElementById('char-count').textContent = `${chars} characters`;
+      document.getElementById('word-count').textContent = `${words} words`;
+
+      if (currentMode === 'sms') {
+        const segments = Math.max(1, Math.ceil(chars / 160));
+        document.getElementById('sms-segment-count').textContent = `• ${segments} SMS (${chars % 160 || (chars ? 160 : 0)}/160)`;
+      }
+    }
+
+    function initKeyboardShortcuts() {
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          analyzeMessage();
+        }
+      });
+    }
+
+    function clearInputs() {
+      document.getElementById('input-subject').value = '';
+      document.getElementById('input-text').value = '';
+      updateCounts();
+      document.getElementById('subject-len').textContent = '0 chars';
+      document.getElementById('results-idle').classList.remove('hidden');
+      document.getElementById('results-active').classList.add('hidden');
+      showToast('Inputs cleared');
+    }
+
+    // Fetch predefined examples
+    async function fetchExamples() {
+      try {
+        const res = await fetch('/api/examples');
+        const data = await res.json();
+        if (data.examples) {
+          data.examples.forEach(ex => {
+            sampleData[ex.id] = ex;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load examples:", err);
+      }
+    }
+
+    function loadSample(sampleId) {
+      const sample = sampleData[sampleId];
+      if (!sample) return;
+
+      setMode(sample.type);
+      document.getElementById('input-subject').value = sample.subject || '';
+      document.getElementById('input-text').value = sample.text || '';
+      document.getElementById('subject-len').textContent = `${(sample.subject || '').length} chars`;
+      updateCounts();
+      showToast(`Loaded sample: ${sample.title}`);
+    }
+
+    // Main Analysis Trigger
+    async function analyzeMessage() {
+      const text = document.getElementById('input-text').value.trim();
+      const subject = document.getElementById('input-subject').value.trim();
+      const btn = document.getElementById('btn-analyze');
+      const btnText = document.getElementById('btn-analyze-text');
+
+      if (!text) {
+        showToast('Please enter message text to analyze!', 'alert');
+        return;
+      }
+
+      btn.disabled = true;
+      btnText.textContent = 'Evaluating...';
+
+      try {
+        const response = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text,
+            subject: subject,
+            mode: currentMode
+          })
+        });
+
+        const data = await response.json();
+        btn.disabled = false;
+        btnText.textContent = 'Analyze Threat Level';
+
+        if (data.error) {
+          showToast(data.error, 'alert');
+          return;
+        }
+
+        renderResults(data);
+
+      } catch (error) {
+        btn.disabled = false;
+        btnText.textContent = 'Analyze Threat Level';
+        showToast('Network error during prediction', 'alert');
+      }
+    }
+
+    // Render results in the right panel
+    function renderResults(data) {
+      document.getElementById('results-idle').classList.add('hidden');
+      const activeCard = document.getElementById('results-active');
+      activeCard.classList.remove('hidden');
+
+      const isSpam = data.classification === 'SPAM';
+      const isSuspicious = data.classification === 'SUSPICIOUS';
+      const isSafe = data.classification === 'HAM';
+
+      // Status Badge
+      const badge = document.getElementById('result-status-badge');
+      const clsText = document.getElementById('result-classification');
+      clsText.textContent = data.risk_label || data.classification;
+
+      badge.className = 'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider flex items-center space-x-1.5 ';
+      if (isSpam) {
+        badge.classList.add('bg-rose-500/20', 'text-rose-400', 'border', 'border-rose-500/30');
+      } else if (isSuspicious) {
+        badge.classList.add('bg-amber-500/20', 'text-amber-400', 'border', 'border-amber-500/30');
+      } else {
+        badge.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/30');
+        // Confetti on clean safe result!
+        confetti({ particleCount: 30, spread: 60, origin: { y: 0.7 } });
+      }
+
+      // Latency
+      document.getElementById('result-latency').textContent = `${data.latency_ms || 8} ms`;
+
+      // Gauge needle / circle animation
+      const score = data.spam_score;
+      document.getElementById('result-score').textContent = `${score}%`;
+
+      const circle = document.getElementById('gauge-circle');
+      const radius = 50;
+      const circumference = 2 * Math.PI * radius; // ~314.159
+      const offset = circumference - (score / 100) * circumference;
+
+      circle.style.strokeDashoffset = offset;
+      if (score >= 65) {
+        circle.className = 'gauge-circle text-rose-500';
+      } else if (score >= 35) {
+        circle.className = 'gauge-circle text-amber-500';
+      } else {
+        circle.className = 'gauge-circle text-emerald-500';
+      }
+
+      // Risk Tier label
+      const tierEl = document.getElementById('result-risk-tier');
+      tierEl.textContent = isSpam ? '🚨 High Risk Malicious Threat' : (isSuspicious ? '⚠️ Potential Marketing / Suspect' : '🛡️ Verified Safe Legitimate');
+      tierEl.className = `text-sm font-semibold mt-2 ${isSpam ? 'text-rose-400' : (isSuspicious ? 'text-amber-400' : 'text-emerald-400')}`;
+
+      // Ham vs Spam Probabilities
+      const spamProb = data.ml_confidence ? data.ml_confidence.spam_probability : data.spam_score;
+      const hamProb = data.ml_confidence ? data.ml_confidence.ham_probability : (100 - spamProb);
+
+      document.getElementById('prob-ham-text').textContent = `${hamProb.toFixed(1)}%`;
+      document.getElementById('prob-spam-text').textContent = `${spamProb.toFixed(1)}%`;
+      document.getElementById('prob-ham-bar').style.width = `${hamProb}%`;
+      document.getElementById('prob-spam-bar').style.width = `${spamProb}%`;
+
+      // Heuristics list
+      const heurList = document.getElementById('heuristics-list');
+      heurList.innerHTML = '';
+      const heurCountBadge = document.getElementById('heuristic-count-badge');
+      heurCountBadge.textContent = `${(data.heuristics || []).length} flagged`;
+
+      if (data.heuristics && data.heuristics.length > 0) {
+        data.heuristics.forEach(h => {
+          const div = document.createElement('div');
+          const isDanger = h.type === 'danger';
+          const isWarning = h.type === 'warning';
+          div.className = `p-2.5 rounded-xl border text-xs flex items-start space-x-2 ${
+            isDanger ? 'bg-rose-500/10 border-rose-500/30 text-rose-300' :
+            (isWarning ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-300')
+          }`;
+          div.innerHTML = `
+            <i data-lucide="${isDanger ? 'alert-octagon' : 'alert-triangle'}" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+            <div>
+              <div class="font-semibold">${h.title}</div>
+              <div class="text-[11px] opacity-80">${h.description}</div>
+            </div>
+          `;
+          heurList.appendChild(div);
+        });
+      } else {
+        heurList.innerHTML = `
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center space-x-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+            <span>No suspicious links, spoofed URLs, or urgency anomalies detected.</span>
+          </div>
+        `;
+      }
+
+      // Trigger words
+      const triggerList = document.getElementById('trigger-words-list');
+      triggerList.innerHTML = '';
+      if (data.trigger_words && data.trigger_words.length > 0) {
+        data.trigger_words.forEach(t => {
+          const span = document.createElement('span');
+          const isSpamWord = t.category === 'spam';
+          span.className = `px-2 py-0.5 rounded-lg text-xs font-mono font-medium border ${
+            isSpamWord ? 'bg-rose-500/15 text-rose-300 border-rose-500/30' : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+          }`;
+          span.textContent = `${t.word} (${t.weight > 0 ? '+' : ''}${t.weight})`;
+          span.title = t.impact;
+          triggerList.appendChild(span);
+        });
+      } else {
+        triggerList.innerHTML = `<span class="text-xs text-slate-500 italic">No strong polar keywords identified</span>`;
+      }
+
+      // Advisory recommendation
+      document.getElementById('result-recommendation').textContent = data.recommendation;
+
+      // X-Ray Highlight
+      document.getElementById('xray-content-box').innerHTML = data.highlighted_html || '';
+
+      lucide.createIcons();
+    }
+
+    // X-Ray viewer toggle
+    function toggleXRay() {
+      const box = document.getElementById('xray-content-box');
+      const text = document.getElementById('xray-toggle-text');
+      const isHidden = box.classList.toggle('hidden');
+      text.textContent = isHidden ? 'Show X-Ray Keyword Highlighting' : 'Hide X-Ray Keyword Highlighting';
+    }
+
+    // TAB 2: Batch Analysis Handlers
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (file) {
+        document.getElementById('drop-filename').textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      }
+    }
+
+    function loadBatchSample() {
+      const sampleBatch = [
+        "Team sprint planning call tomorrow at 10am in conference room B.",
+        "URGENT: Your PayPal account has been limited! Click here to update: http://bit.ly/paypal-verify-auth",
+        "Can you pick up milk and bread on your way home?",
+        "CONGRATULATIONS you won $5,000,000 lottery! Call 1-800-CLAIM-NOW with bank info.",
+        "Your Amazon package is out for delivery with tracking #9400111899223"
+      ];
+      document.getElementById('batch-text-input').value = sampleBatch.join('\n');
+      showToast('Loaded 5 sample batch messages');
+    }
+
+    async function runBatchAnalysis() {
+      const fileInput = document.getElementById('batch-file-input');
+      const textInput = document.getElementById('batch-text-input').value.trim();
+      const btn = document.getElementById('btn-batch-run');
+      const btnText = document.getElementById('batch-run-text');
+
+      if (!fileInput.files[0] && !textInput) {
+        showToast('Please upload a file or paste messages!', 'alert');
+        return;
+      }
+
+      btn.disabled = true;
+      btnText.textContent = 'Processing Batch...';
+
+      const formData = new FormData();
+      if (fileInput.files[0]) {
+        formData.append('file', fileInput.files[0]);
+      } else {
+        const items = textInput.split('\n').map(s => s.trim()).filter(Boolean);
+        formData.append('items', JSON.stringify(items));
+      }
+
+      try {
+        let response;
+        if (fileInput.files[0]) {
+          response = await fetch('/api/batch', {
+            method: 'POST',
+            body: formData
+          });
+        } else {
+          const items = textInput.split('\n').map(s => s.trim()).filter(Boolean);
+          response = await fetch('/api/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+          });
+        }
+
+        const data = await response.json();
+        btn.disabled = false;
+        btnText.textContent = 'Run Batch Inspection';
+
+        if (data.error) {
+          showToast(data.error, 'alert');
+          return;
+        }
+
+        renderBatchResults(data);
+
+      } catch (err) {
+        btn.disabled = false;
+        btnText.textContent = 'Run Batch Inspection';
+        showToast('Error executing batch inspection', 'alert');
+      }
+    }
+
+    function renderBatchResults(data) {
+      currentBatchItems = data.items || [];
+      const summary = data.summary;
+
+      document.getElementById('batch-kpis').classList.remove('hidden');
+      document.getElementById('batch-table-container').classList.remove('hidden');
+
+      document.getElementById('kpi-total').textContent = summary.total;
+      document.getElementById('kpi-speed').textContent = `${summary.processing_time_ms} ms total`;
+      document.getElementById('kpi-spam').textContent = summary.spam_count;
+      document.getElementById('kpi-spam-rate').textContent = `${summary.spam_rate}% threat rate`;
+      document.getElementById('kpi-ham').textContent = summary.ham_count;
+      document.getElementById('kpi-ham-rate').textContent = `${(100 - summary.spam_rate).toFixed(1)}% safe`;
+      document.getElementById('kpi-avg-risk').textContent = `${summary.avg_risk_score}%`;
+
+      filterBatch('ALL');
+      showToast(`Batch completed: ${summary.total} items evaluated!`);
+    }
+
+    function filterBatch(filterType) {
+      ['all', 'spam', 'ham'].forEach(t => {
+        const btn = document.getElementById(`filter-${t}`);
+        if (t === filterType.toLowerCase()) {
+          btn.className = 'px-2.5 py-1 rounded bg-indigo-600 text-white font-medium';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium';
+        }
+      });
+
+      const tbody = document.getElementById('batch-table-body');
+      tbody.innerHTML = '';
+
+      const filtered = currentBatchItems.filter(item => {
+        if (filterType === 'ALL') return true;
+        return item.classification === filterType;
+      });
+
+      filtered.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-900/50 transition-colors cursor-pointer';
+        tr.onclick = () => {
+          document.getElementById('input-text').value = item.full_text;
+          switchTab('classifier');
+          analyzeMessage();
+        };
+
+        const isSpam = item.classification === 'SPAM';
+        const badgeClass = isSpam ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+
+        tr.innerHTML = `
+          <td class="p-3 text-slate-500 font-mono">${item.id}</td>
+          <td class="p-3 text-slate-300 max-w-xs truncate">${item.text}</td>
+          <td class="p-3">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${badgeClass}">
+              ${item.classification}
+            </span>
+          </td>
+          <td class="p-3 font-mono font-bold ${isSpam ? 'text-rose-400' : 'text-emerald-400'}">
+            ${item.spam_score}%
+          </td>
+          <td class="p-3 text-slate-400 font-mono">${item.top_trigger}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function exportBatchCSV() {
+      if (!currentBatchItems.length) return;
+      let csv = "ID,Message,Classification,SpamRiskScore,TopTrigger\n";
+      currentBatchItems.forEach(i => {
+        const cleanMsg = `"${i.full_text.replace(/"/g, '""')}"`;
+        csv += `${i.id},${cleanMsg},${i.classification},${i.spam_score},${i.top_trigger}\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `spamify_analysis_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Exported CSV successfully');
+    }
+
+    // TAB 3: Model Analytics
+    async function fetchModelMetadata() {
+      try {
+        const res = await fetch('/api/model-info');
+        const data = await res.json();
+        metadataCache = data;
+      } catch (err) {
+        console.error("Failed to fetch model metadata:", err);
+      }
+    }
+
+    function renderFeaturesChart() {
+      if (!metadataCache || !metadataCache.top_spam_words) return;
+
+      const ctx = document.getElementById('featuresChart').getContext('2d');
+      const spamWords = metadataCache.top_spam_words.slice(0, 10);
+      const hamWords = metadataCache.top_ham_words.slice(0, 10);
+
+      const labels = [...spamWords.map(w => w.token), ...hamWords.map(w => w.token)];
+      const weights = [...spamWords.map(w => w.weight), ...hamWords.map(w => -w.weight)];
+      const colors = [...spamWords.map(() => 'rgba(244, 63, 94, 0.85)'), ...hamWords.map(() => 'rgba(16, 185, 129, 0.85)')];
+
+      featuresChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'N-Gram Weight Impact',
+            data: weights,
+            backgroundColor: colors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { family: 'JetBrains Mono' } }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // TAB 4: API Code Snippets
+    const apiSnippets = {
+      python: `# Python Example
+import requests
+
+url = "http://127.0.0.1:5000/api/predict"
+payload = {
+    "text": "Your account has been suspended! Verify here: http://bit.ly/bank-auth",
+    "subject": "Urgent Security Alert",
+    "mode": "email"
+}
+
+response = requests.post(url, json=payload)
+data = response.json()
+print("Classification:", data["classification"])
+print("Spam Risk Score:", data["spam_score"], "%")
+print("Trigger Words:", [t["word"] for t in data["trigger_words"]])`,
+
+      javascript: `// JavaScript (Fetch) Example
+const payload = {
+  text: "USPS: Package failed to deliver. Update address: http://192.168.1.1/track",
+  mode: "sms"
+};
+
+fetch("http://127.0.0.1:5000/api/predict", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+})
+  .then(res => res.json())
+  .then(data => {
+    console.log("Risk Level:", data.risk_level);
+    console.log("Score:", data.spam_score);
+  });`,
+
+      curl: `# cURL Example
+curl -X POST http://127.0.0.1:5000/api/predict \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "text": "Claim your $1,000,000 prize now at http://bit.ly/prize-claim",
+    "mode": "sms"
+  }'`
+    };
+
+    function setApiSnippet(lang) {
+      ['python', 'javascript', 'curl'].forEach(l => {
+        const btn = document.getElementById(`btn-api-${l}`);
+        if (l === lang) {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-medium bg-indigo-600 text-white';
+        } else {
+          btn.className = 'px-3 py-1 rounded-lg text-xs font-medium text-slate-400 hover:text-white';
+        }
+      });
+      document.querySelector('#api-code-block code').textContent = apiSnippets[lang];
+    }
+
+    function copyApiSnippet() {
+      const code = document.querySelector('#api-code-block code').textContent;
+      navigator.clipboard.writeText(code);
+      document.getElementById('copy-snippet-text').textContent = 'Copied!';
+      setTimeout(() => {
+        document.getElementById('copy-snippet-text').textContent = 'Copy';
+      }, 2000);
+      showToast('API snippet copied to clipboard');
+    }
+
+    // Toast Notification Utility
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      const icon = document.getElementById('toast-icon');
+
+      text.textContent = msg;
+      if (type === 'alert') {
+        icon.setAttribute('data-lucide', 'alert-circle');
+        icon.className = 'w-4 h-4 text-rose-400';
+      } else {
+        icon.setAttribute('data-lucide', 'check-circle');
+        icon.className = 'w-4 h-4 text-emerald-400';
+      }
+      lucide.createIcons();
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2800);
+    }
+  </script>
+
+</body>
+</html>
