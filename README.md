@@ -4,23 +4,23 @@
 
 ---
 
-## ✨ Features & Capabilities
+## Features & Capabilities
 
-- 🎯 **99.47% Test Accuracy & 99.98% ROC-AUC**:
+- **99.47% Test Accuracy & 99.98% ROC-AUC**:
   - Stratified 80/20 train/test evaluation across 5,695 deduplicated messages.
   - Sublinear TF-IDF (1-2 N-grams, 15,000 vocabulary) + Regularized Calibrated Logistic Regression.
   - Only 4 false positives and 2 false negatives out of 1,139 unseen test samples.
 
-- ⚡ **Dual-Channel Protection (Email & SMS)**:
+-  **Dual-Channel Protection (Email & SMS)**:
   - **Email Mode**: Inspects subject headers, body text, attachment references, and corporate/phishing cues.
   - **SMS Mode**: Specifically tuned for mobile smishing lures (package delivery scams, crypto giveaways, fake 2FA OTPs, bank urgent freezes, SMS segment counting).
 
-- 🔍 **Explainable AI & Threat Attribution**:
+- **Explainable AI & Threat Attribution**:
   - Real-time extraction of top contributing trigger words (positive spam n-grams and negative ham words).
   - Interactive **X-Ray mode** highlighting suspicious keywords directly in the message text.
   - Heuristic security signals: detects IP-based links, URL shorteners (bit.ly, tinyurl), excessive uppercase shouting, and fear-urgency appeals.
 
-- 🎨 **Modern Interactive Web Frontend**:
+-  **Modern Interactive Web Frontend**:
   - **Live Radial Risk Meter**: Dynamic SVG gauge animating from 0% to 100% spam risk with color transitions.
   - **1-Click Presets**: Realistic samples for instant testing (Meeting Notes, Bank Phishing Alert, USPS Delivery Scam, Crypto Prize, Friend SMS, Bank 2FA OTP).
   - **Batch & File Scanner**: Drag & drop `.csv` or `.txt` datasets or paste multi-line messages, with instant filterable tables and one-click CSV export.
@@ -30,7 +30,7 @@
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Spamify-spam-filtering-for-SMS-and-Email/
@@ -52,7 +52,7 @@ Spamify-spam-filtering-for-SMS-and-Email/
 
 ---
 
-## 🚀 Quick Start Guide
+##  Quick Start Guide
 
 ### 1. Install Dependencies
 ```bash
@@ -145,7 +145,7 @@ http://127.0.0.1:5000
 
 ---
 
-## 📝 Jupyter Notebook Improvements
+##  Jupyter Notebook Improvements
 
 The newly added [`email-spam-filter-improved.ipynb`](email-spam-filter-improved.ipynb) resolves all issues in the original notebook:
 - ✅ Added all missing imports (`pandas`, `numpy`, `sklearn`, `nltk`, `matplotlib`, `seaborn`).
